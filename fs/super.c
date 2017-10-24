@@ -1269,6 +1269,13 @@ int super_setup_bdi_name(struct super_block *sb, char *fmt, ...)
 		return -ENOMEM;
 
 	bdi->name = sb->s_type->name;
+	if( sb->s_bdev && sb->s_bdev->bd_bdi ) {
+		bdi->dirty_background_ratio = sb->s_bdev->bd_bdi->dirty_background_ratio;
+		bdi->dirty_ratio = sb->s_bdev->bd_bdi->dirty_ratio;
+		bdi->dirty_background_bytes = sb->s_bdev->bd_bdi->dirty_background_bytes;
+		bdi->dirty_bytes = sb->s_bdev->bd_bdi->dirty_bytes;
+		bdi->min_pages_to_flush = sb->s_bdev->bd_bdi->min_pages_to_flush;
+	}
 
 	va_start(args, fmt);
 	err = bdi_register_va(bdi, fmt, args);

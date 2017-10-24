@@ -152,6 +152,25 @@ struct backing_dev_info {
 	unsigned int capabilities; /* Device capabilities */
 	unsigned int min_ratio;
 	unsigned int max_ratio, max_prop_frac;
+	unsigned int dirty_background_ratio;
+	unsigned int dirty_ratio;	
+	unsigned long dirty_background_bytes;
+	unsigned long dirty_bytes;
+	unsigned long ratelimit_pages;
+	unsigned long min_pages_to_flush;
+	
+	/*
+	 * The dirtyable memory and dirty threshold could be suddenly
+	 * knocked down by a large amount (eg. on the startup of KVM in a
+	 * swapless system). This may throw the system into deep dirty
+	 * exceeded state and throttle heavy/light dirtiers alike. To
+	 * retain good responsiveness, maintain global_dirty_limit for
+	 * tracking slowly down to the knocked down dirty threshold.
+	 *
+	 * Both fields are protected by ->lock.
+	 */
+	unsigned long dirty_limit;
+	unsigned long dirty_limit_tstamp;
 
 	/*
 	 * Sum of avg_write_bw of wbs with dirty inodes.  > 0 if there are

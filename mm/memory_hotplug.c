@@ -969,7 +969,7 @@ int __ref online_pages(unsigned long pfn, unsigned long nr_pages, int online_typ
 
 	vm_total_pages = nr_free_pagecache_pages();
 
-	writeback_set_ratelimit();
+	writeback_set_ratelimit(NULL);
 
 	if (onlined_pages)
 		memory_notify(MEM_ONLINE, &arg);
@@ -1710,7 +1710,7 @@ repeat:
 	}
 
 	vm_total_pages = nr_free_pagecache_pages();
-	writeback_set_ratelimit();
+	writeback_set_ratelimit(NULL);
 
 	memory_notify(MEM_OFFLINE, &arg);
 	return 0;

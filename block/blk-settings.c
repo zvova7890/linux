@@ -245,6 +245,7 @@ void blk_queue_max_hw_sectors(struct request_queue *q, unsigned int max_hw_secto
 		       __func__, max_hw_sectors);
 	}
 
+	q->backing_dev_info->min_pages_to_flush = max_hw_sectors;
 	limits->max_hw_sectors = max_hw_sectors;
 	max_sectors = min_not_zero(max_hw_sectors, limits->max_dev_sectors);
 	max_sectors = min_t(unsigned int, max_sectors, BLK_DEF_MAX_SECTORS);

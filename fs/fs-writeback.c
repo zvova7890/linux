@@ -1317,7 +1317,6 @@ __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
 	trace_writeback_single_inode_start(inode, wbc, nr_to_write);
 
 	ret = do_writepages(mapping, wbc);
-
 	/*
 	 * Make sure to wait on the data before writing out the metadata.
 	 * This is important for filesystems that modify metadata on data
@@ -1470,7 +1469,7 @@ static long writeback_chunk_size(struct bdi_writeback *wb,
 		pages = LONG_MAX;
 	else {
 		pages = min(wb->avg_write_bandwidth / 2,
-			    global_wb_domain.dirty_limit / DIRTY_SCOPE);
+			    wb->bdi->dirty_limit / DIRTY_SCOPE);
 		pages = min(pages, work->nr_pages);
 		pages = round_down(pages + MIN_WRITEBACK_PAGES,
 				   MIN_WRITEBACK_PAGES);

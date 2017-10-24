@@ -143,19 +143,6 @@ struct wb_domain {
 	struct fprop_global completions;
 	struct timer_list period_timer;	/* timer for aging of completions */
 	unsigned long period_time;
-
-	/*
-	 * The dirtyable memory and dirty threshold could be suddenly
-	 * knocked down by a large amount (eg. on the startup of KVM in a
-	 * swapless system). This may throw the system into deep dirty
-	 * exceeded state and throttle heavy/light dirtiers alike. To
-	 * retain good responsiveness, maintain global_dirty_limit for
-	 * tracking slowly down to the knocked down dirty threshold.
-	 *
-	 * Both fields are protected by ->lock.
-	 */
-	unsigned long dirty_limit_tstamp;
-	unsigned long dirty_limit;
 };
 
 /**
@@ -172,10 +159,10 @@ struct wb_domain {
  */
 static inline void wb_domain_size_changed(struct wb_domain *dom)
 {
-	spin_lock(&dom->lock);
-	dom->dirty_limit_tstamp = jiffies;
-	dom->dirty_limit = 0;
-	spin_unlock(&dom->lock);
+	//spin_lock(&dom->lock);
+	//dom->dirty_limit_tstamp = jiffies;
+	//dom->dirty_limit = 0;
+	//spin_unlock(&dom->lock);
 }
 
 /*
@@ -390,7 +377,7 @@ int write_cache_pages(struct address_space *mapping,
 		      struct writeback_control *wbc, writepage_t writepage,
 		      void *data);
 int do_writepages(struct address_space *mapping, struct writeback_control *wbc);
-void writeback_set_ratelimit(void);
+void writeback_set_ratelimit(struct backing_dev_info *bdi);
 void tag_pages_for_writeback(struct address_space *mapping,
 			     pgoff_t start, pgoff_t end);
 
@@ -398,5 +385,6 @@ void account_page_redirty(struct page *page);
 
 void sb_mark_inode_writeback(struct inode *inode);
 void sb_clear_inode_writeback(struct inode *inode);
+void page_writeback_init_bdi(struct backing_dev_info *bdi);
 
 #endif		/* WRITEBACK_H */

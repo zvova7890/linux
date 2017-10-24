@@ -207,6 +207,98 @@ static ssize_t max_ratio_store(struct device *dev,
 }
 BDI_SHOW(max_ratio, bdi->max_ratio)
 
+static ssize_t dirty_ratio_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct backing_dev_info *bdi = dev_get_drvdata(dev);
+	unsigned int dirty_ratio;
+	ssize_t ret;
+
+	ret = kstrtouint(buf, 10, &dirty_ratio);
+	if (ret < 0)
+		return ret;
+    
+	ret = bdi_set_dirty_ratio(bdi, dirty_ratio);
+	if (!ret)
+		ret = count;
+	
+	return ret;
+}
+BDI_SHOW(dirty_ratio, bdi->dirty_ratio)
+
+static ssize_t dirty_background_ratio_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct backing_dev_info *bdi = dev_get_drvdata(dev);
+	unsigned int dirty_background_ratio;
+	ssize_t ret;
+
+	ret = kstrtouint(buf, 10, &dirty_background_ratio);
+	if (ret < 0)
+		return ret;
+
+	ret = bdi_set_dirty_background_ratio(bdi, dirty_background_ratio);
+	if (!ret)
+		ret = count;
+	
+	return ret;
+}
+BDI_SHOW(dirty_background_ratio, bdi->dirty_background_ratio)
+
+static ssize_t dirty_bytes_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct backing_dev_info *bdi = dev_get_drvdata(dev);
+	unsigned long dirty_bytes;
+	ssize_t ret;
+
+	ret = kstrtoul(buf, 10, &dirty_bytes);
+	if (ret < 0)
+		return ret;
+    
+	ret = bdi_set_dirty_bytes(bdi, dirty_bytes);
+	if (!ret)
+		ret = count;
+	
+	return ret;
+}
+BDI_SHOW(dirty_bytes, bdi->dirty_bytes)
+
+static ssize_t dirty_background_bytes_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct backing_dev_info *bdi = dev_get_drvdata(dev);
+	unsigned long dirty_background_bytes;
+	ssize_t ret;
+
+	ret = kstrtoul(buf, 10, &dirty_background_bytes);
+	if (ret < 0)
+		return ret;
+
+	ret = bdi_set_dirty_background_bytes(bdi, dirty_background_bytes);
+	if (!ret)
+		ret = count;
+	
+	return ret;
+}
+BDI_SHOW(dirty_background_bytes, bdi->dirty_background_bytes)
+
+static ssize_t min_pages_to_flush_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct backing_dev_info *bdi = dev_get_drvdata(dev);
+	unsigned long pages;
+	ssize_t ret;
+
+	ret = kstrtoul(buf, 10, &pages);
+	if (ret < 0)
+		return ret;
+
+	bdi->min_pages_to_flush = pages;
+	return count;
+}
+BDI_SHOW(min_pages_to_flush, bdi->min_pages_to_flush)
+
 static ssize_t stable_pages_required_show(struct device *dev,
 					  struct device_attribute *attr,
 					  char *page)
@@ -223,6 +315,11 @@ static struct attribute *bdi_dev_attrs[] = {
 	&dev_attr_min_ratio.attr,
 	&dev_attr_max_ratio.attr,
 	&dev_attr_stable_pages_required.attr,
+	&dev_attr_dirty_ratio.attr,
+	&dev_attr_dirty_background_ratio.attr,
+	&dev_attr_dirty_bytes.attr,
+	&dev_attr_dirty_background_bytes.attr,
+	&dev_attr_min_pages_to_flush.attr,
 	NULL,
 };
 ATTRIBUTE_GROUPS(bdi_dev);
@@ -831,13 +928,22 @@ static int bdi_init(struct backing_dev_info *bdi)
 	kref_init(&bdi->refcnt);
 	bdi->min_ratio = 0;
 	bdi->max_ratio = 100;
+	bdi->dirty_ratio = 0;
+	bdi->dirty_background_ratio = 0;
+	bdi->dirty_bytes = 0;
+	bdi->dirty_background_bytes = 0;
+	bdi->ratelimit_pages = 0;	
+	bdi->min_pages_to_flush = 0;
+	bdi->dirty_limit = 0;
+	bdi->dirty_limit_tstamp = jiffies;
 	bdi->max_prop_frac = FPROP_FRAC_BASE;
 	INIT_LIST_HEAD(&bdi->bdi_list);
 	INIT_LIST_HEAD(&bdi->wb_list);
 	init_waitqueue_head(&bdi->wb_waitq);
-
 	ret = cgwb_bdi_init(bdi);
-
+	if( !ret)
+		page_writeback_init_bdi(bdi);
+	
 	return ret;
 }
 

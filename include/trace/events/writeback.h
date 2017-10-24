@@ -406,7 +406,6 @@ TRACE_EVENT(global_dirty_state,
 		__field(unsigned long,	nr_unstable)
 		__field(unsigned long,	background_thresh)
 		__field(unsigned long,	dirty_thresh)
-		__field(unsigned long,	dirty_limit)
 		__field(unsigned long,	nr_dirtied)
 		__field(unsigned long,	nr_written)
 	),
@@ -419,18 +418,16 @@ TRACE_EVENT(global_dirty_state,
 		__entry->nr_written	= global_node_page_state(NR_WRITTEN);
 		__entry->background_thresh = background_thresh;
 		__entry->dirty_thresh	= dirty_thresh;
-		__entry->dirty_limit	= global_wb_domain.dirty_limit;
 	),
 
 	TP_printk("dirty=%lu writeback=%lu unstable=%lu "
-		  "bg_thresh=%lu thresh=%lu limit=%lu "
+		  "bg_thresh=%lu thresh=%lu "
 		  "dirtied=%lu written=%lu",
 		  __entry->nr_dirty,
 		  __entry->nr_writeback,
 		  __entry->nr_unstable,
 		  __entry->background_thresh,
 		  __entry->dirty_thresh,
-		  __entry->dirty_limit,
 		  __entry->nr_dirtied,
 		  __entry->nr_written
 	)
@@ -525,8 +522,8 @@ TRACE_EVENT(balance_dirty_pages,
 		unsigned long freerun = (thresh + bg_thresh) / 2;
 		strlcpy(__entry->bdi, dev_name(wb->bdi->dev), 32);
 
-		__entry->limit		= global_wb_domain.dirty_limit;
-		__entry->setpoint	= (global_wb_domain.dirty_limit +
+		__entry->limit		= wb->bdi->dirty_limit;
+		__entry->setpoint	= (wb->bdi->dirty_limit +
 						freerun) / 2;
 		__entry->dirty		= dirty;
 		__entry->bdi_setpoint	= __entry->setpoint *

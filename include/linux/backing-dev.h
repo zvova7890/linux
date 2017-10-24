@@ -105,6 +105,10 @@ static inline unsigned long wb_stat_error(struct bdi_writeback *wb)
 
 int bdi_set_min_ratio(struct backing_dev_info *bdi, unsigned int min_ratio);
 int bdi_set_max_ratio(struct backing_dev_info *bdi, unsigned int max_ratio);
+int bdi_set_dirty_ratio(struct backing_dev_info *bdi, unsigned int dirty_ratio);
+int bdi_set_dirty_background_ratio(struct backing_dev_info *bdi, unsigned int dirty_background_ratio);
+int bdi_set_dirty_bytes(struct backing_dev_info *bdi, unsigned long dirty_bytes);
+int bdi_set_dirty_background_bytes(struct backing_dev_info *bdi, unsigned long dirty_background_bytes);
 
 /*
  * Flags in backing_dev_info::capability
